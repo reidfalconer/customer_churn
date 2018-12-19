@@ -47,7 +47,7 @@ glimpse(df)
 
 # use caret to generate a 70-30 train-test-split index
 set.seed(8910)
-train_index <- createDataPartition(df$cluster, p = 0.70, list = FALSE, times = 1)
+train_index <- createDataPartition(df$cluster, p = 0.60, list = FALSE, times = 1)
 
 # use index to split data into train and test sets
 train <- df %>% slice(train_index) 
@@ -62,7 +62,7 @@ cv <- createFolds(train$cluster, k = 10)
 formula <- as.formula(paste("cluster ~ ", paste(colnames(train[,1:(length(train)-1)]), collapse= "+")))
 
 xgboostGrid <- expand.grid(#nrounds = 10,
-                           nrounds = 1000,
+                           nrounds = 500,
                            #eta = 1,
                            eta = seq(0.1,1,0.1),
                            #gamma = 1,
@@ -70,7 +70,7 @@ xgboostGrid <- expand.grid(#nrounds = 10,
                            #colsample_bytree = 1.0,
                            colsample_bytree = c(0.5,0.7,1.0),
                            #max_depth = 6,
-                           max_depth = c(4,6,8),
+                           max_depth = c(1,2,3,4),
                            #min_child_weight = c(7,8),
                            min_child_weight = c(1,7,8),
                            subsample = 1)
@@ -96,7 +96,7 @@ for (i in seq(1, max.threads, by = 1)) {
   
   start.time <- as.numeric(as.POSIXct(Sys.time()))
   
-  model.training <- train(formula,
+  model.training <- caret::train(formula,
                           data = train,
                           method = "xgbTree",
                           trControl = xgboostControl,
